@@ -121,12 +121,7 @@ class SmartConfig:
                         setattr(self, key, value)
                 # Backward compatibility: if only 'symbol' provided, build symbols list
                 if 'symbols' not in config_data and 'symbol' in config_data:
-        if 'symbols' in config_data:
-            self.symbols = config_data['symbols']
-        elif 'symbol' in config_data:
-            self.symbols = [config_data['symbol']]
-        else:
-            raise ValueError("Config must contain 'symbol' or 'symbols'")
+                    self.symbols = [config_data['symbol']]
                         
                 logger.info("Configuration loaded successfully")
                 

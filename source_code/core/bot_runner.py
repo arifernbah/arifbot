@@ -585,15 +585,6 @@ class BinanceFuturesProBot:
                 await self.telegram.send_casual_message(f"⚠️ Quantity too small: {quantity:.6f} < {min_qty}")
                 return False
             
-            # Cek minimum notional (Binance: $5)
-            notional = quantity * current_price
-            min_notional = 5.0
-            if notional < min_notional:
-                await self.telegram.send_casual_message(
-                    f"⚠️ Notional too small: {notional:.2f} < {min_notional} (quantity: {quantity}, price: {current_price})"
-                )
-                return False
-            
             # Round quantity properly
             quantity = round(quantity / step_size) * step_size
             
