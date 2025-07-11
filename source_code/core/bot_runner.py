@@ -721,7 +721,11 @@ class BinanceFuturesProBot:
     def optimize_memory(self):
         """Memory optimization untuk VPS 1GB"""
         self.memory_optimization_counter += 1
-        memory_mb = self.process.memory_info().rss / 1024 / 1024
+        try:
+            memory_mb = self.process.memory_info().rss / 1024 / 1024
+        except Exception as e:
+            logger.error(f"Failed to get memory info: {e}")
+            memory_mb = 0
         
         # More frequent memory checks for VPS optimization
         if self.memory_optimization_counter % 50 == 0:  # Check every 50 iterations
