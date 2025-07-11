@@ -125,41 +125,52 @@ class BinanceFuturesProBot:
             # Get exchange info for minimum quantities
             exchange_info = await self.client.futures_exchange_info()
             
+            # Define affordable symbols for small balance
+            affordable_symbols = [
+                "DOGEUSDT", "ADAUSDT", "SOLUSDT", "MATICUSDT", "AVAXUSDT", 
+                "DOTUSDT", "LINKUSDT", "ATOMUSDT", "UNIUSDT", "LTCUSDT",
+                "XRPUSDT", "TRXUSDT", "BCHUSDT", "EOSUSDT", "XLMUSDT"
+            ]
+            
             for symbol_data in top_symbols:
                 symbol = symbol_data['symbol']
                 
-                # Get symbol info
+                # Filter out expensive symbols for small balance
+                if balance < 10:  # For balance < $10
+                    if symbol not in affordable_symbols:
+                        continue  # Skip expensive symbols like BTCUSDT, ETHUSDT
+                
+                # Check minimum quantity requirements
                 symbol_info = next((s for s in exchange_info['symbols'] if s['symbol'] == symbol), None)
                 if not symbol_info:
                     continue
                 
-                # Get minimum quantity
+                # Get LOT_SIZE filter for minimum quantity
                 lot_size_filter = next((f for f in symbol_info['filters'] if f['filterType'] == 'LOT_SIZE'), None)
                 if not lot_size_filter:
                     continue
                 
                 min_qty = float(lot_size_filter['minQty'])
-                
-                # Get current price
-                ticker = await self.client.futures_symbol_ticker(symbol=symbol)
-                current_price = float(ticker['price'])
+                step_size = float(lot_size_filter['stepSize'])
                 
                 # Calculate minimum order value
-                min_order_value = min_qty * current_price
-                
-                # Check if balance is enough (with 5x leverage)
-                leverage = 5
-                min_balance_needed = min_order_value / leverage
-                
-                logger.info(f"Symbol: {symbol}, Min Order Value: ${min_order_value:.4f}, Min Balance Needed: ${min_balance_needed:.2f}")
-                
-                if balance >= min_balance_needed:
-                    tradeable_symbols.append(symbol)
-                    logger.info(f"✅ {symbol} tradeable with balance ${balance:.2f}")
-                else:
-                    logger.info(f"❌ {symbol} requires ${min_balance_needed:.2f}, balance ${balance:.2f} insufficient")
+                try:
+                    ticker = await self.client.futures_symbol_ticker(symbol=symbol)
+                    current_price = float(ticker['price'])
+                    min_order_value = min_qty * current_price
+                    
+                    # Check if we can afford minimum order with leverage
+                    leverage = getattr(self.config, 'leverage', 5)
+                    required_margin = min_order_value / leverage
+                    
+                    if required_margin <= balance * 0.8:  # Leave 20% buffer
+                        tradeable_symbols.append(symbol)
+                        
+                except Exception as e:
+                    logger.warning(f"Error checking {symbol}: {e}")
+                    continue
             
-            logger.info(f"Tradeable symbols: {tradeable_symbols}")
+            logger.info(f"Tradeable symbols for ${balance} balance: {tradeable_symbols}")
             return tradeable_symbols
             
         except Exception as e:

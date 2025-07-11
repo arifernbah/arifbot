@@ -41,7 +41,7 @@
         "initial_balance": 5,
         "exchange": "binance_futures",
         "leverage": 5,
-        "symbols": ["DOGEUSDT", "BTCUSDT", "ETHUSDT", "BNBUSDT", "ADAUSDT", "SOLUSDT", "MATICUSDT", "AVAXUSDT", "DOTUSDT", "LINKUSDT"],
+        "symbols": ["DOGEUSDT", "ADAUSDT", "SOLUSDT", "MATICUSDT", "AVAXUSDT", "DOTUSDT", "LINKUSDT", "ATOMUSDT", "UNIUSDT", "LTCUSDT"],
         "timeframe": "15m",
         "strategy": "hybrid",
         "risk_level": "ultra_conservative",
